@@ -11153,6 +11153,7 @@ async function sendNotification(webhookUrl, messageData) {
  */
 async function main() {
   try {
+    axios.defaults.headers.post['Content-Type'] = 'application/json';
     const webhookUrl = core.getInput('webhook-url');
     const provider = core.getInput('provider');
     const channel = core.getInput('channel');

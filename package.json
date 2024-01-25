@@ -10,7 +10,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/DavideViolante/pr-reviews-reminder-action.git"
+    "url": "git+https://github.com/paulhazen/pr-reviews-reminder-action.git"
   },
   "author": "Davide Violante",
   "license": "MIT",
@@ -20,7 +20,7 @@
   "homepage": "https://github.com/DavideViolante/pr-reviews-reminder-action#readme",
   "dependencies": {
     "@actions/core": "^1.10.1",
-    "axios": "^1.6.3"
+    "axios": "^1.6.6"
   },
   "devDependencies": {
     "@vercel/ncc": "^0.38.1",
