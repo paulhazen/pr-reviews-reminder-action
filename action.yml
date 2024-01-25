@@ -1,4 +1,4 @@
-name: 'PR reviews reminder action'
+name: 'Whimsical PR reviews reminder action'
 description: 'Automatically send notification for pull requests waiting for reviewers'
 branding:
   icon: 'bell'
