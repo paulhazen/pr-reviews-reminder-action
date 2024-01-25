@@ -46,7 +46,7 @@ jobs:
   pr-reviews-reminder:
     runs-on: ubuntu-latest
     steps:
-    - uses: davideviolante/pr-reviews-reminder-action@v2.7.0
+    - uses: paulhazen/pr-reviews-reminder-action@v2.7.0
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
@@ -62,3 +62,4 @@ Please open an issue.
 
 ## Author
 - [Davide Violante](https://github.com/DavideViolante)
+- [Paul Hazen](https://github.com/paulhazen)
