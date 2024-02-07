@@ -330,7 +330,7 @@ function buildReviewPrompt(pr_review_request) {
     // random, whimsical phrase pre-pended with sunflower
     return ":sunflower: " + getRandomStatement();
   } else {
-    let statement = "${mention}: This <${url}|PR> has been pending your review for " + pr_review_request + " days.";
+    let statement = "${mention}: This <${url}|PR> has been pending your review for " + pr_review_request.days_open + " days.";
     if (pr_review_request.days_open == 2) {
       return ":large_yellow_square: *REMINDER:* " + statement;
     } else if (pr_review_request.days_open == 3) {
