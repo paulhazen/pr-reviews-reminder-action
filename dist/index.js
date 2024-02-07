@@ -35,18 +35,21 @@ function getPullRequestsReviewersCount(pullRequests) {
 }
 
 /**
- * Create an Array of Objects with { url, title, login } properties from a list of Pull Requests
+ * Create an Array of Objects with { url, pr_opened_at, title, login } properties from a list of Pull Requests
  * @param {Array} pullRequestsToReview Pull Requests
  * @return {Array} Array of Objects with { url, title, login } properties
  */
 function createPr2UserArray(pullRequestsToReview) {
   const pr2user = [];
   for (const pr of pullRequestsToReview) {
+    // Get the number of business days that the PR has been open for, rounded to the nearest day
+    days_open = daysBetweenExcludingWeekends(pr.created_at)
     for (const user of pr.requested_reviewers) {
       pr2user.push({
         url: pr.html_url,
         title: pr.title,
         login: user.login,
+        days_open: days_open
       });
     }
     for (const team of pr.requested_teams) {
@@ -54,6 +57,7 @@ function createPr2UserArray(pullRequestsToReview) {
         url: pr.html_url,
         title: pr.title,
         login: team.slug,
+        days_open: days_open
       });
     }
   }
@@ -93,6 +97,30 @@ function stringToObject(str) {
 function getRandomString(arr) {
   const randomIndex = Math.floor(Math.random() * arr.length);
   return arr[randomIndex];
+}
+
+function daysBetweenExcludingWeekends(dateString) {
+  const startDate = new Date(dateString);
+  const endDate = new Date();
+  
+  let totalDays = 0;
+  let currentDate = new Date(startDate);
+
+  while (currentDate <= endDate) {
+    // Get the day of the week: 0 for Sunday, 1 for Monday, ..., 6 for Saturday
+    const dayOfWeek = currentDate.getDay();
+
+    // Check if it's a weekday (Monday to Friday)
+    if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+      totalDays++;
+    }
+
+    // Move to the next day
+    currentDate.setDate(currentDate.getDate() + 1);
+  }
+
+  // Return the total number of weekdays
+  return totalDays;
 }
 
 /**
@@ -279,7 +307,8 @@ function prettyMessage(pr2user, github2provider, provider) {
           url: obj.url,
           mention: mention
         };
-        statement = getRandomStatement()
+
+        let statement = buildReviewPrompt(obj);
         message += applyTemplate(statement, args);
         break;
       }
@@ -300,6 +329,24 @@ function prettyMessage(pr2user, github2provider, provider) {
     }
   }
   return message;
+}
+
+function buildReviewPrompt(pr_review_request) {
+  if (pr_review_request.days_open <= 1) {
+    // random, whimsical phrase pre-pended with sunflower
+    return ":sunflower: " + getRandomStatement();
+  } else {
+    let statement = "${mention}: This <${url}|PR> has been pending your review for " + pr_review_request + " days.";
+    if (pr_review_request.days_open == 2) {
+      return ":large_yellow_square: *REMINDER:* " + statement;
+    } else if (pr_review_request.days_open == 3) {
+      return ":large_orange_square: *CAUTION:* " + statement;
+    } else if (pr_review_request.days_open == 4) {
+      return ":large_red_square: *WARNING:* " + statement;
+    } else {
+      return ":fire: *URGENT*: " + statement
+    }
+  }
 }
 
 /**
@@ -11160,12 +11207,20 @@ async function main() {
     const github2providerString = core.getInput('github-provider-map');
     const ignoreLabel = core.getInput('ignore-label');
     core.info('Getting open pull requests...');
+
+    // Get all the pull requests
     const pullRequests = await getPullRequests();
+
+    // Count how many reviewers there are
     const totalReviewers = await getPullRequestsReviewersCount(pullRequests.data);
     core.info(`There are ${pullRequests.data.length} open pull requests and ${totalReviewers} reviewers`);
     const pullRequestsToReview = getPullRequestsToReview(pullRequests.data);
+
+    // Apply the ignore label
     const pullRequestsWithoutLabel = getPullRequestsWithoutLabel(pullRequestsToReview, ignoreLabel);
+    
     core.info(`There are ${pullRequestsWithoutLabel.length} pull requests waiting for reviews`);
+
     if (pullRequestsWithoutLabel.length) {
       const pr2user = createPr2UserArray(pullRequestsWithoutLabel);
       if (github2providerString && !checkGithubProviderFormat(github2providerString)) {
