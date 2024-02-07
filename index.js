@@ -60,12 +60,20 @@ async function main() {
     const github2providerString = core.getInput('github-provider-map');
     const ignoreLabel = core.getInput('ignore-label');
     core.info('Getting open pull requests...');
+
+    // Get all the pull requests
     const pullRequests = await getPullRequests();
+
+    // Count how many reviewers there are
     const totalReviewers = await getPullRequestsReviewersCount(pullRequests.data);
     core.info(`There are ${pullRequests.data.length} open pull requests and ${totalReviewers} reviewers`);
     const pullRequestsToReview = getPullRequestsToReview(pullRequests.data);
+
+    // Apply the ignore label
     const pullRequestsWithoutLabel = getPullRequestsWithoutLabel(pullRequestsToReview, ignoreLabel);
+    
     core.info(`There are ${pullRequestsWithoutLabel.length} pull requests waiting for reviews`);
+
     if (pullRequestsWithoutLabel.length) {
       const pr2user = createPr2UserArray(pullRequestsWithoutLabel);
       if (github2providerString && !checkGithubProviderFormat(github2providerString)) {
