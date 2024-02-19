@@ -303,7 +303,7 @@ function prettyMessage(pr2user, github2provider, provider) {
         };
 
         let statement = buildReviewPrompt(obj);
-        message += applyTemplate(statement, args);
+        message += applyTemplate(statement, args) + '\n';
         break;
       }
       case 'rocket': {
